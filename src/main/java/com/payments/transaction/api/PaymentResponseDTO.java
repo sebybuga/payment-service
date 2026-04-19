@@ -2,13 +2,10 @@ package com.payments.transaction.api;
 
 import com.payments.transaction.domain.PaymentStatus;
 import lombok.*;
-import lombok.extern.jackson.Jacksonized;
-
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Jacksonized
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
