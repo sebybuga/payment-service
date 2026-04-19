@@ -3,6 +3,7 @@ package com.payments.transaction.api;
 import com.payments.transaction.application.PaymentTransactionService;
 import com.payments.transaction.domain.PaymentStatus;
 import jakarta.validation.Valid;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
@@ -19,7 +20,7 @@ public class PaymentTransactionController {
 
     private final PaymentTransactionService service;
 
-    @PostMapping(value = "/create-payment", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PaymentResponseDTO> createPayment(
             @RequestHeader String applicationId,
             @RequestBody @Valid PaymentRequestDTO requestDTO){
