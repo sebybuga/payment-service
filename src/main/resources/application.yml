@@ -6,6 +6,23 @@ spring:
       - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
       - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
-server:
-  port: 8080
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/payments_db}
+    username: ${DB_USERNAME:payments_user}
+    password: ${DB_PASSWORD:payments_pass}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
+server:
+  port: 8083

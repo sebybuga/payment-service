@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 
 @Service
 @Slf4j
@@ -32,6 +34,8 @@ public class PaymentTransactionService {
                     .senderId(request.getSenderId())
                     .receiverId(request.getReceiverId())
                     .status(PaymentStatus.PENDING)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
                     .build();
 
             PaymentTransaction saved = paymentTransactionRepository.save(paymentTransaction);
@@ -62,6 +66,7 @@ public class PaymentTransactionService {
                 .orElseThrow(() -> new PaymentNotFoundException(id));
 
         transaction.setStatus(status);
+        transaction.setUpdatedAt(LocalDateTime.now());
         PaymentTransaction saved = paymentTransactionRepository.save(transaction);
         return toResponseDTO(saved);
     }

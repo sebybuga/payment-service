@@ -41,7 +41,7 @@ public class PaymentTransactionController {
     ResponseEntity<PaymentResponseDTO> updatePaymentStatus(
             @RequestHeader String applicationId,
             @PathVariable long id,
-            @RequestParam @Valid PaymentStatus status){
+            @RequestBody PaymentStatus status){
         log.info("Request for updating payment with id {} for application id: {}", id, applicationId);
         return ResponseEntity.ok(service.updatePaymentStatus(id, status));
     }
