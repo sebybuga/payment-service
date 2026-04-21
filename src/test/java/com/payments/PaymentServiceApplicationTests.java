@@ -1,5 +1,6 @@
 package com.payments;
 
+import com.payments.transaction.infrastructure.PaymentEventProducer;
 import com.payments.transaction.infrastructure.PaymentTransactionRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,6 +12,9 @@ class PaymentServiceApplicationTests {
 
     @MockitoBean
     PaymentTransactionRepository paymentTransactionRepository;
+
+    @MockitoBean
+    PaymentEventProducer paymentEventProducer;
 
 
     @Test

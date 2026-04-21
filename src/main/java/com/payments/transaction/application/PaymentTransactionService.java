@@ -3,8 +3,10 @@ package com.payments.transaction.application;
 
 import com.payments.transaction.api.PaymentRequestDTO;
 import com.payments.transaction.api.PaymentResponseDTO;
+import com.payments.transaction.domain.PaymentCreatedEvent;
 import com.payments.transaction.domain.PaymentStatus;
 import com.payments.transaction.domain.PaymentTransaction;
+import com.payments.transaction.infrastructure.PaymentEventProducer;
 import com.payments.transaction.infrastructure.PaymentTransactionRepository;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ import java.time.LocalDateTime;
 public class PaymentTransactionService {
 
     private final PaymentTransactionRepository paymentTransactionRepository;
+    private final PaymentEventProducer paymentEventProducer;
 
     @Transactional
     public PaymentResponseDTO createPayment(PaymentRequestDTO request) {
@@ -39,6 +42,16 @@ public class PaymentTransactionService {
                     .build();
 
             PaymentTransaction saved = paymentTransactionRepository.save(paymentTransaction);
+
+            PaymentCreatedEvent event = PaymentCreatedEvent.builder()
+                    .paymentId(saved.getId())
+                    .amount(saved.getAmount())
+                    .currency(saved.getCurrency())
+                    .status(saved.getStatus())
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+            paymentEventProducer.sendPaymentCreatedEvent(event);
 
             return toResponseDTO(saved);
 

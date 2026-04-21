@@ -3,8 +3,6 @@ spring:
     name: payment-service
   autoconfigure:
     exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/payments_db}
@@ -23,6 +21,8 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
+    topic: payment-events
+flyway:
+    enabled : false
 server:
   port: 8083
