@@ -1,5 +1,6 @@
 package com.payments;
 
+import com.payments.transaction.infrastructure.PaymentEventConsumer;
 import com.payments.transaction.infrastructure.PaymentEventProducer;
 import com.payments.transaction.infrastructure.PaymentTransactionRepository;
 import org.junit.jupiter.api.Test;
@@ -16,8 +17,12 @@ class PaymentServiceApplicationTests {
     @MockitoBean
     PaymentEventProducer paymentEventProducer;
 
+    @MockitoBean
+    PaymentEventConsumer paymentEventConsumer;
+
 
     @Test
     void contextLoads() {
+        // Verifies that the Spring application context loads successfully
     }
 }

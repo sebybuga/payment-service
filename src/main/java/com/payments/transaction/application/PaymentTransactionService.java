@@ -9,6 +9,8 @@ import com.payments.transaction.domain.PaymentTransaction;
 import com.payments.transaction.infrastructure.PaymentEventProducer;
 import com.payments.transaction.infrastructure.PaymentTransactionRepository;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,8 @@ public class PaymentTransactionService {
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final PaymentEventProducer paymentEventProducer;
 
+    @CircuitBreaker(name = "payment-db", fallbackMethod = "createPaymentFallback")
+    @Retry(name = "payment-db")
     @Transactional
     public PaymentResponseDTO createPayment(PaymentRequestDTO request) {
 
@@ -61,6 +65,12 @@ public class PaymentTransactionService {
 
     }
 
+    public PaymentResponseDTO createPaymentFallback(PaymentRequestDTO request, Exception ex) {
+        log.error("Circuit breaker triggered for createPayment: {}, sender: {}", ex.getMessage(), request.getSenderId());
+        throw new PaymentProcessingException("Payment service temporarily unavailable", ex);
+    }
+
+    @CircuitBreaker(name = "payment-db", fallbackMethod = "getPaymentFallback")
     @Transactional(readOnly = true)
     public PaymentResponseDTO getPaymentById(Long id) {
         log.info("Fetching payment with id: {}", id);
@@ -68,8 +78,11 @@ public class PaymentTransactionService {
         return paymentTransactionRepository.findById(id)
                 .map(this ::toResponseDTO)
                 .orElseThrow( () ->new PaymentNotFoundException(id));
+    }
 
-
+    public PaymentResponseDTO getPaymentFallback(Long id, Exception ex) {
+        log.error("Circuit breaker triggered for getPaymentById: {}, id: {}", ex.getMessage(), id);
+        throw new PaymentProcessingException("Payment service temporarily unavailable", ex);
     }
 
     @Transactional
