@@ -32,7 +32,7 @@ spring:
     group-id: payment-group
 
 flyway:
-    enabled : false
+  enabled: false
 
 server:
   port: 8083
@@ -64,3 +64,10 @@ api:
     version: 1.0.0
     contact-name: Sebastian
     contact-email: seby_buga@email.com
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+
+auth:
+  username: ${AUTH_USERNAME}
+  password: ${AUTH_PASSWORD}

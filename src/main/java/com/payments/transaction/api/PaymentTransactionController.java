@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
@@ -66,8 +65,4 @@ public class PaymentTransactionController {
         log.info("Request for updating payment with id {} for application id: {}", id, applicationId);
         return ResponseEntity.ok(service.updatePaymentStatus(id, status));
     }
-
-
-
-
 }
