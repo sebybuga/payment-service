@@ -57,3 +57,10 @@ resilience4j:
         limit-for-period: 100
         limit-refresh-period: 1s
         timeout-duration: 0s
+api:
+  info:
+    title: Payment Service API
+    description: REST API for processing payments
+    version: 1.0.0
+    contact-name: Sebastian
+    contact-email: seby_buga@email.com
