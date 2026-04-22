@@ -1,5 +1,6 @@
 package com.payments.transaction.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.payments.transaction.application.PaymentTransactionService;
 import com.payments.transaction.domain.PaymentStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,11 +33,12 @@ public class PaymentTransactionController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PaymentResponseDTO> createPayment(
             @RequestHeader String applicationId,
-            @RequestBody @Valid PaymentRequestDTO requestDTO){
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @RequestBody @Valid PaymentRequestDTO requestDTO) throws JsonProcessingException {
         log.info("Request for creating payment for application id: {}", applicationId);
         return ResponseEntity
-                .status(HttpStatusCode.valueOf(201))
-                .body(service.createPayment(requestDTO));
+                .status(HttpStatus.CREATED)
+                .body(service.createPayment(idempotencyKey, requestDTO));
     }
 
     @Operation(summary = "Get payment by id", description = "Fetches payment information from database by id")

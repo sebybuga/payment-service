@@ -1,6 +1,11 @@
 package com.payments.transaction.application;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.payments.idempotency.IdempotencyRecord;
+import com.payments.idempotency.IdempotencyRepository;
+import com.payments.idempotency.IdempotencyService;
 import com.payments.transaction.api.PaymentDetailsDTO;
 import com.payments.transaction.api.PaymentRequestDTO;
 import com.payments.transaction.api.PaymentResponseDTO;
@@ -29,12 +34,29 @@ public class PaymentTransactionService {
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final PaymentEventProducer paymentEventProducer;
     private final ModelMapper modelMapper;
+    private final IdempotencyService idempotencyService;
+    private final IdempotencyRepository idempotencyRepository;
+    private final ObjectMapper objectMapper;
 
     @CircuitBreaker(name = "payment-db", fallbackMethod = "createPaymentFallback")
     @Retry(name = "payment-db")
     @Transactional
-    public PaymentResponseDTO createPayment(PaymentRequestDTO request) {
+    public PaymentResponseDTO createPayment(String idempotencyKey, PaymentRequestDTO request) throws JsonProcessingException {
         log.info("Creating payment for senderId: {}", request.getSenderId());
+
+        //idempotency check
+        if (idempotencyKey != null && idempotencyService.existsByKey(idempotencyKey)) {
+            log.info("Duplicate request detected for key: {}", idempotencyKey);
+            return idempotencyService.getResponse(idempotencyKey)
+                    .map(json -> {
+                        try {
+                            return objectMapper.readValue(json, PaymentResponseDTO.class);
+                        } catch (Exception e) {
+                            throw new PaymentProcessingException("Failed to deserialize cached response", e);
+                        }
+                    })
+                    .orElseThrow(() -> new PaymentNotFoundException(-1L));
+        }
 
         PaymentTransaction paymentTransaction = toEntity(request);
 
@@ -50,7 +72,24 @@ public class PaymentTransactionService {
 
         paymentEventProducer.sendPaymentCreatedEvent(event);
 
-        return toResponseDTO(saved);
+        PaymentResponseDTO response = toResponseDTO(saved);
+
+        //save idempotency record
+        if (idempotencyKey != null){
+            try {
+                IdempotencyRecord idempotencyRecord = IdempotencyRecord.builder()
+                        .idempotencyKey(idempotencyKey)
+                        .response(objectMapper.writeValueAsString(response))
+                        .createdAt(LocalDateTime.now())
+                        .build();
+                idempotencyRepository.save(idempotencyRecord);
+            } catch (Exception e){
+                log.warn("Failed to save idempotency record: {}", e.getMessage());
+            }
+        }
+
+        return response;
+
 
     }
 
