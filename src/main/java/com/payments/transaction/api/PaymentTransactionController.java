@@ -46,7 +46,7 @@ public class PaymentTransactionController {
             @ApiResponse(responseCode = "500", description = "An error has occurred")
     })
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PaymentResponseDTO> getPaymentById(
+    public ResponseEntity<PaymentDetailsDTO> getPaymentById(
             @RequestHeader String applicationId,
             @PathVariable Long id){
         return ResponseEntity.ok(service.getPaymentById(id));

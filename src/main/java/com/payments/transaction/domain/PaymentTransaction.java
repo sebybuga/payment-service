@@ -18,7 +18,6 @@ import java.util.Objects;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class PaymentTransaction {
 
     @Id
