@@ -3,6 +3,7 @@ package com.payments.transaction.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.payments.transaction.application.PaymentTransactionService;
 import com.payments.transaction.domain.PaymentStatus;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -10,7 +11,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +30,7 @@ public class PaymentTransactionController {
             @ApiResponse(responseCode = "400", description = "Invalid request data"),
             @ApiResponse(responseCode = "500", description = "Payment processing failed")
     })
+    @RateLimiter(name="payment-api", fallbackMethod = "rateLimitFallback")
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PaymentResponseDTO> createPayment(
             @RequestHeader String applicationId,
@@ -68,4 +69,18 @@ public class PaymentTransactionController {
         log.info("Request for updating payment with id {} for application id: {}", id, applicationId);
         return ResponseEntity.ok(service.updatePaymentStatus(id, status));
     }
+
+    public ResponseEntity<PaymentResponseDTO> rateLimitFallback(
+            String applicationId, String idempotencyKey,
+            PaymentRequestDTO requestDTO, Exception ex
+    ) {
+        log.warn("Rate limit exceeded for applicationId: {}, idempotencyKey: {}, amount: {}, error: {}",
+                applicationId,
+                idempotencyKey,
+                requestDTO.getAmount(),
+                ex.getMessage());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .build();
+    }
+
 }

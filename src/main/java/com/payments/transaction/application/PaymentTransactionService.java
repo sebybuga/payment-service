@@ -113,6 +113,7 @@ public class PaymentTransactionService {
         throw new PaymentProcessingException("Payment service temporarily unavailable", ex);
     }
 
+
     @Transactional
     public PaymentResponseDTO updatePaymentStatus(Long id, PaymentStatus status) {
         log.info("Updating payment {} to status {}", id, status);
